@@ -1,0 +1,137 @@
+Blockly.Blocks['ArduinoFiov2IN'] = {
+  init: function() {
+    var PROPERTIES = [["DigitalINOne", "DIGITALINONE"],["AnalogINOne", "ANALOGINONE"]];
+    this.setColour(120);
+    this.appendDummyInput('')
+        .appendField("ArduinoFiov2."); //The text field for the device name
+    var dropdown = new Blockly.FieldDropdown(PROPERTIES, function(option) {
+       var portInput = option;
+       this.sourceBlock_.dynamicOptions(portInput); 
+       //calling dynamicOptions to work on properties dropdown
+    }); 
+    this.appendDummyInput('')
+        .appendField(dropdown, 'PROPERTY'); //dropdown list to choose modules 
+    this.setInputsInline(true);
+    this.setTooltip('');
+  },
+  dynamicOptions: function(portInput) {
+    if (portInput == 'DIGITALINONE') { //if this module is selected
+	if(!this.getInput('P_DIGITALINONE')){ //if the property list for DIGITALINONE is not present
+	    this.appendDummyInput('P_DIGITALINONE')
+	        .appendField('.')
+	        .appendField(new Blockly.FieldDropdown([["boolValue", "BOOLVALUE"]]), "PROP_DIGITALINONE");
+		//generate property list for DIGITALINONE
+	}
+	if(this.getInput('P_ANALOGINONE')){this.removeInput('P_ANALOGINONE');}
+    }
+    if (portInput == 'ANALOGINONE') { //if this module is selected
+	if(!this.getInput('P_ANALOGINONE')){ //if the property list for ANALOGINONE is not present
+	    this.appendDummyInput('P_ANALOGINONE')
+	        .appendField('.')
+	        .appendField(new Blockly.FieldDropdown([["voltage", "VOLTAGE"]]), "PROP_ANALOGINONE");
+		//generate property list for ANALOGINONE
+	}
+	if(this.getInput('P_DIGITALINONE')){this.removeInput('P_DIGITALINONE');}
+    }
+  },
+ /*creating XML of current status--mutationToDom here*/
+ /*retrieving information from XML and calling function to work with dyna. drop-down lists*/
+   domToMutation: function(xmlElement) {
+    var portInput;
+    if(xmlElement.getAttribute('PROP_DIGITALINONE') == 'true'){portInput = 'DIGITALINONE'};
+    if(xmlElement.getAttribute('PROP_ANALOGINONE') == 'true'){portInput = 'ANALOGINONE'};
+    this.dynamicOptions(portInput);  
+  }
+};
+Blockly.Blocks['RaspberryPiIN'] = {
+  init: function() {
+    var PROPERTIES = [["WebDisplayOne", "WEBDISPLAYONE"],["Example", "EXAMPLE"]];
+    this.setColour(120);
+    this.appendDummyInput('')
+        .appendField("RaspberryPi."); //The text field for the device name
+    var dropdown = new Blockly.FieldDropdown(PROPERTIES, function(option) {
+       var portInput = option;
+       this.sourceBlock_.dynamicOptions(portInput); 
+       //calling dynamicOptions to work on properties dropdown
+    }); 
+    this.appendDummyInput('')
+        .appendField(dropdown, 'PROPERTY'); //dropdown list to choose modules 
+    this.setInputsInline(true);
+    this.setTooltip('');
+  },
+  dynamicOptions: function(portInput) {
+    if (portInput == 'WEBDISPLAYONE') { //if this module is selected
+	if(!this.getInput('P_WEBDISPLAYONE')){ //if the property list for WEBDISPLAYONE is not present
+	    this.appendDummyInput('P_WEBDISPLAYONE')
+	        .appendField('.')
+	        .appendField(new Blockly.FieldDropdown([["fileserverIP", "FILESERVERIP"]]), "PROP_WEBDISPLAYONE");
+		//generate property list for WEBDISPLAYONE
+	}
+	if(this.getInput('P_EXAMPLE')){this.removeInput('P_EXAMPLE');}
+    }
+    if (portInput == 'EXAMPLE') { //if this module is selected
+	if(!this.getInput('P_EXAMPLE')){ //if the property list for EXAMPLE is not present
+	    this.appendDummyInput('P_EXAMPLE')
+	        .appendField('.')
+	        .appendField(new Blockly.FieldDropdown([["voltage", "VOLTAGE"]]), "PROP_EXAMPLE");
+		//generate property list for EXAMPLE
+	}
+	if(this.getInput('P_WEBDISPLAYONE')){this.removeInput('P_WEBDISPLAYONE');}
+    }
+  },
+ /*creating XML of current status--mutationToDom here*/
+ /*retrieving information from XML and calling function to work with dyna. drop-down lists*/
+   domToMutation: function(xmlElement) {
+    var portInput;
+    if(xmlElement.getAttribute('PROP_WEBDISPLAYONE') == 'true'){portInput = 'WEBDISPLAYONE'};
+    if(xmlElement.getAttribute('PROP_EXAMPLE') == 'true'){portInput = 'EXAMPLE'};
+    this.dynamicOptions(portInput);  
+  }
+};
+Blockly.Blocks['RaspberryPiOUT'] = {
+  init: function() {
+    var PROPERTIES = [["WebDisplayOne", "WEBDISPLAYONE"],["Example", "EXAMPLE"]];
+    this.setColour(240);
+    this.appendDummyInput('')
+        .appendField("RaspberryPi."); //The text field for the device name
+    var dropdown = new Blockly.FieldDropdown(PROPERTIES, function(option) {
+       var portInput = option;
+       this.sourceBlock_.dynamicOptions(portInput); 
+       //calling dynamicOptions to work on properties dropdown
+    }); 
+    this.appendDummyInput('')
+        .appendField(dropdown, 'PROPERTY'); //dropdown list to choose modules 
+    this.setInputsInline(true);
+    this.setTooltip('');
+  },
+  dynamicOptions: function(portInput) {
+    if (portInput == 'WEBDISPLAYONE') { //if this module is selected
+	if(!this.getInput('P_WEBDISPLAYONE')){ //if the property list for WEBDISPLAYONE is not present
+	    this.appendDummyInput('P_WEBDISPLAYONE')
+	        .appendField('.')
+	        .appendField(new Blockly.FieldDropdown([["showURL", "SHOWURL"],["showText", "SHOWTEXT"]]), "PROP_WEBDISPLAYONE");
+		//generate property list for WEBDISPLAYONE
+	}
+	if(this.getInput('P_EXAMPLE')){this.removeInput('P_EXAMPLE');}
+    }
+    if (portInput == 'EXAMPLE') { //if this module is selected
+	if(!this.getInput('P_EXAMPLE')){ //if the property list for EXAMPLE is not present
+	    this.appendDummyInput('P_EXAMPLE')
+	        .appendField('.')
+	        .appendField(new Blockly.FieldDropdown([["showURL", "SHOWURL"],["showText", "SHOWTEXT"]]), "PROP_EXAMPLE");
+		//generate property list for EXAMPLE
+	}
+	if(this.getInput('P_WEBDISPLAYONE')){this.removeInput('P_WEBDISPLAYONE');}
+    }
+  },
+ /*creating XML of current status--mutationToDom here*/
+ /*retrieving information from XML and calling function to work with dyna. drop-down lists*/
+   domToMutation: function(xmlElement) {
+    var portInput;
+    if(xmlElement.getAttribute('PROP_WEBDISPLAYONE') == 'true'){portInput = 'WEBDISPLAYONE'};
+    if(xmlElement.getAttribute('PROP_EXAMPLE') == 'true'){portInput = 'EXAMPLE'};
+    this.dynamicOptions(portInput);  
+  }
+};
+var newTree = "  <xml id=\"toolbox\" style=\"display: none\"><category name=\"Lol\"></category>  </xml>"
+Blockly.updateToolbox(newTree);

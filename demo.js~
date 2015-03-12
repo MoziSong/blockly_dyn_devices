@@ -1,0 +1,297 @@
+/*var http = require("http");
+var fs = require('fs');
+var port = 8080;
+
+var server = http.createServer(function(req, res) {
+    fs.readFile("mozi_demo.html", 'utf8', function(err, text){
+      console.log(text);
+      res.setHeader("Content-Type", "text/html");
+      res.end(text);
+    });
+});
+server.listen(port);
+*/
+var express = require('express');
+var app = express();
+var fs = require('fs');
+app.get('/', function(req, res) {
+  fs.readFile("mozi_demo.html", 'utf8', function(err, text){
+      res.setHeader("Content-Type", "text/html");
+      res.end(text);
+    });
+});
+
+app.use(express.static(__dirname));
+app.listen(8080);
+var apiUrl = "http://localhost:3000/api/";
+
+var inputs = {devices:[]};
+var outputs = {devices:[]};
+
+/****** DEVICES *****/
+
+/*
+    Retrieves devices from API
+ */
+
+function getDevices(callback) {
+  var http =  require('http');
+  var options = {
+    hostname: apiUrl,
+    path: '/devices'
+  };
+  var req = http.get('http://localhost:3000/api/devices', function(res) {
+   console.log("request");
+    res.setEncoding('utf8');
+    res.on('data', function (chunk) {
+      //console.log('BODY: ' + chunk);
+      var chunk = JSON.parse(chunk);
+      callback(chunk);
+    });
+  });
+}
+
+/*
+    Handles a single device
+ */
+function handleDevice(device){
+    console.log("device: "+device.config.info.userID);
+    var inputPrps = {id:device.config.info.userID,ports:[]};
+    var outputPrps = {id:device.config.info.userID,ports:[]}; 
+    for(port in device.config.ports){
+ 	if(device.config.ports[port].state != null && Object.keys(device.config.ports[port].state).length != 0){
+		var inputPort = {id:device.config.ports[port].state.info.userID,props:[]};
+		var outputPort = {id:device.config.ports[port].state.info.userID,props:[]};
+		if(device.config.ports[port].state.state.input != null){
+			for(prop in device.config.ports[port].state.state.input){
+			    inputPort.props.push({prop:prop});
+			}
+			//write module into INPUT array
+		}
+		if(device.config.ports[port].state.state.output != null){
+			for(prop in device.config.ports[port].state.state.output){
+				    outputPort.props.push({prop:prop});
+			}
+			//write module into OUTPUT array
+		}
+		if(inputPort.props.length > 0){
+			inputPrps.ports.push(inputPort);
+		}
+		if(outputPort.props.length > 0){
+			outputPrps.ports.push(outputPort);
+		}
+	}
+    }
+    if(inputPrps.ports.length > 0){inputs.devices.push(inputPrps);}
+    if(outputPrps.ports.length > 0){outputs.devices.push(outputPrps);}
+}
+
+function writeDeviceInBlock(){
+    var fs = require('fs');for(device in inputs.devices){console.log("device: "+inputs.devices[device].id);}
+    var code = '';
+    for(device in inputs.devices){
+	code += "Blockly.Blocks[\'"+inputs.devices[device].id+"IN\'] = {\n";
+	code += "  init: function() {\n"
+	      + "    var PROPERTIES = [";
+	var count = 0;
+	for(port in inputs.devices[device].ports){
+		code += ((count!=0)?',':'')+"[\""+inputs.devices[device].ports[port].id+"\", \""
+		      + inputs.devices[device].ports[port].id.toUpperCase()+"\"]";
+		count++;
+	}
+	code += "\];\n"
+	      + "    this.setColour(120);\n"
+	      + "    this.setOutput(true);\n"
+	      + "    this.appendDummyInput(\'\')\n"
+	      + "        .appendField(\""+inputs.devices[device].id+".\"); //The text field for the device name\n"
+	      + "    var dropdown = new Blockly.FieldDropdown(PROPERTIES, function(option) {\n"
+	      + "       var portInput = option;\n"
+	      + "       this.sourceBlock_.dynamicOptions(portInput); \n"
+	      + "       //calling dynamicOptions to work on properties dropdown\n"
+	      + "    }); \n"
+	      + "    this.appendDummyInput(\'\')\n"
+	      + "        .appendField(dropdown, \'PROPERTY\'); //dropdown list to choose modules \n"
+	      + "    this.setInputsInline(true);\n"
+	      + "    this.setTooltip('');\n"
+	      + "  },\n"
+	      + "  dynamicOptions: function(portInput) {\n"
+	for(port in inputs.devices[device].ports){
+		var upPort = inputs.devices[device].ports[port].id.toUpperCase();
+		code += "    if (portInput == \'"+ upPort
+		      + "\') { //if this module is selected\n"
+		      + "	if(!this.getInput(\'P_"+upPort+"\')){"
+                      + " //if the property list for "+upPort+" is not present\n"
+		      + "	    this.appendDummyInput(\'P_"+upPort+"\')\n"
+		      + "	        .appendField(\'.\')\n"
+		      + "	        .appendField(new Blockly.FieldDropdown([";
+		var count = 0;
+		for(j=0;j<inputs.devices[device].ports[port].props.length;j++){
+			var pName = inputs.devices[device].ports[port].props[j].prop;
+			code += ((count!=0)?',':'')+"[\""+pName+"\", \""
+		      	      + pName.toUpperCase()+"\"]";
+			      count++;
+		}
+		code += "]), \"PROP_"+upPort+"\");\n"
+	      	      + "		//generate property list for "+upPort+"\n"
+	      	      + "	}\n";
+		for(oPort in inputs.devices[device].ports){
+			if(oPort != port){
+				var upOPort = inputs.devices[device].ports[oPort].id.toUpperCase();
+				code += "	if(this.getInput(\'P_"+upOPort
+				      + "\')){this.removeInput(\'P_"+upOPort+"\');}\n"
+			}
+		}
+	      	code += "    }\n";
+	}
+	code += "  },\n"
+	      + " /*creating XML of current status--mutationToDom here*/\n"
+	      + "  mutationToDom: function() {\n"
+	      + "    var container = document.createElement('mutation');\n";
+	for(port in inputs.devices[device].ports){
+		var upPort = inputs.devices[device].ports[port].id.toUpperCase();
+		code += "    if(this.getFieldValue(\'PROPERTY\') == \'"+upPort+"\'){\n"
+		      + "  	  container.setAttribute(\'PROP_"+upPort+"\', \'true\');\n";
+		for(oPort in inputs.devices[device].ports){
+			if(oPort != port){
+				var upOPort = inputs.devices[device].ports[oPort].id.toUpperCase();
+				code +="	  container.setAttribute(\'PROP_"
+				      + upOPort+"\', \'false\');\n";
+			}
+		}
+		code += "      }\n";
+	}
+	code += "    return container;\n"
+	      + "  }, \n"
+	      + " /*retrieving information from XML and calling function to work with dyna. drop-down lists*/\n"
+	      + "   domToMutation: function(xmlElement) {\n"
+	      + "    var portInput;\n";
+	for(port in inputs.devices[device].ports){
+		var upPort = inputs.devices[device].ports[port].id.toUpperCase();
+		code += "    if(xmlElement.getAttribute(\'PROP_"+upPort
+		      + "\') == \'true\'){portInput = \'"+upPort+"\'};\n";
+	}
+	code += "    this.dynamicOptions(portInput);  \n"
+	      + "  }\n"
+	      + "};\n"
+    }
+    
+    fs.writeFile("blocks/devices.js", code, function(err) {
+console.log("writing");
+    	if(err) {
+    	    console.log(err);
+    	} else {
+    	    console.log("The file was saved!");
+    	}
+    }); 
+}
+
+
+function writeDeviceOutBlock(){
+    var fs = require('fs');
+    var code = '';
+    for(device in outputs.devices){
+	code += "Blockly.Blocks[\'"+outputs.devices[device].id+"OUT\'] = {\n";
+	code += "  init: function() {\n"
+	      + "    var PROPERTIES = [";
+	var count = 0;
+	for(port in outputs.devices[device].ports){
+		code += ((count!=0)?',':'')+"[\""+outputs.devices[device].ports[port].id+"\", \""
+		      + outputs.devices[device].ports[port].id.toUpperCase()+"\"]";
+		count++;
+	}
+	code += "\];\n"
+	      + "    this.setColour(240);\n"
+	      + "    this.setOutput(true);\n"
+	      + "    this.appendDummyInput(\'\')\n"
+	      + "        .appendField(\""+outputs.devices[device].id+".\"); //The text field for the device name\n"
+	      + "    var dropdown = new Blockly.FieldDropdown(PROPERTIES, function(option) {\n"
+	      + "       var portInput = option;\n"
+	      + "       this.sourceBlock_.dynamicOptions(portInput); \n"
+	      + "       //calling dynamicOptions to work on properties dropdown\n"
+	      + "    }); \n"
+	      + "    this.appendDummyInput(\'\')\n"
+	      + "        .appendField(dropdown, \'PROPERTY\'); //dropdown list to choose modules \n"
+	      + "    this.setInputsInline(true);\n"
+	      + "    this.setTooltip('');\n"
+	      + "  },\n"
+	      + "  dynamicOptions: function(portInput) {\n"
+	for(port in outputs.devices[device].ports){
+		var upPort = outputs.devices[device].ports[port].id.toUpperCase();
+		code += "    if (portInput == \'"+ upPort
+		      + "\') { //if this module is selected\n"
+		      + "	if(!this.getInput(\'P_"+upPort+"\')){"
+                      + " //if the property list for "+upPort+" is not present\n"
+		      + "	    this.appendDummyInput(\'P_"+upPort+"\')\n"
+		      + "	        .appendField(\'.\')\n"
+		      + "	        .appendField(new Blockly.FieldDropdown([";
+		var count = 0;
+		for(j=0;j<outputs.devices[device].ports[port].props.length;j++){
+			var pName = outputs.devices[device].ports[port].props[j].prop;
+			code += ((count!=0)?',':'')+"[\""+pName+"\", \""
+		      	      + pName.toUpperCase()+"\"]";
+			      count++;
+		}
+		code += "]), \"PROP_"+upPort+"\");\n"
+	      	      + "		//generate property list for "+upPort+"\n"
+	      	      + "	}\n";
+		for(oPort in outputs.devices[device].ports){
+			if(oPort != port){
+				var upOPort = outputs.devices[device].ports[oPort].id.toUpperCase();
+				code += "	if(this.getInput(\'P_"+upOPort
+				      + "\')){this.removeInput(\'P_"+upOPort+"\');}\n"
+			}
+		}
+	      	code += "    }\n";
+	}
+	code += "  },\n"
+	      + " /*creating XML of current status--mutationToDom here*/\n"
+	      + "  mutationToDom: function() {\n"
+	      + "    var container = document.createElement('mutation');\n";
+	for(port in outputs.devices[device].ports){
+		var upPort = outputs.devices[device].ports[port].id.toUpperCase();
+		code += "    if(this.getFieldValue(\'PROPERTY\') == \'"+upPort+"\'){\n"
+		      + "  	  container.setAttribute(\'PROP_"+upPort+"\', \'true\');\n";
+		for(oPort in outputs.devices[device].ports){
+			if(oPort != port){
+				var upOPort = outputs.devices[device].ports[oPort].id.toUpperCase();
+				code +="	  container.setAttribute(\'PROP_"
+				      + upOPort+"\', \'false\');\n";
+			}
+		}
+		code += "      }\n";
+	}
+	code += "    return container;\n"
+	      + "  }, \n"
+	      + " /*retrieving information from XML and calling function to work with dyna. drop-down lists*/\n"
+	      + "   domToMutation: function(xmlElement) {\n"
+	      + "    var portInput;\n";
+	for(port in outputs.devices[device].ports){
+		var upPort = outputs.devices[device].ports[port].id.toUpperCase();
+		code += "    if(xmlElement.getAttribute(\'PROP_"+upPort
+		      + "\') == \'true\'){portInput = \'"+upPort+"\'};\n";
+	}
+	code += "    this.dynamicOptions(portInput);  \n"
+	      + "  }\n"
+	      + "};\n"
+    }
+    
+    fs.appendFile("blocks/devices.js", code, function(err) {
+    	if(err) {
+    	    console.log(err);
+    	} else {
+    	    console.log("The file was saved!");
+    	}
+    }); 
+}
+
+getDevices(function(devices){
+                    for (var i=0; i < devices.length; i++) {
+                        handleDevice(devices[i]);
+                    }
+			console.log("inputs: "+JSON.stringify(inputs));
+			console.log("outputs: "+JSON.stringify(outputs));
+			writeDeviceInBlock();
+			writeDeviceOutBlock();
+        });
+
+

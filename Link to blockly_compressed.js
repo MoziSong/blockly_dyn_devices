@@ -1,0 +1,1 @@
+/home/mozi/blockly/blockly_compressed.js

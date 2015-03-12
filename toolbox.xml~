@@ -1,0 +1,76 @@
+
+  <xml id="toolbox" style="display: none">
+    <category name="DeviceIN">
+      <block type="RaspberryPiIN"></block>
+      <block type="ArduinoFiov2IN"></block>
+    </category>
+    <category name="DeviceOUT">
+      <block type="RaspberryPiOUT"></block>
+      <block type="ArduinoFiov3OUT"></block>
+    </category>	
+    <category name="Control">
+      <block type="controls_if"></block>
+      <block type="controls_whileUntil"></block>
+    </category>
+    <category name="Variables">
+      <block type="customized_set"></block>
+    </category>
+    <category name="Text">
+      <block type="text"></block>
+    </category>
+    <category name="Logic">
+      <block type="math_number"></block>
+      <block type="logic_compare"></block>
+      <block type="logic_operation"></block>
+      <block type="logic_boolean"></block>
+      <block type="controls_repeat_ext"></block>
+      <block type="math_number_property"></block>
+    </category>
+  </xml>	
+	<xml id="blocklyDefault" style="display: none">
+  <block type="controls_if" inline="false" x="62" y="69">
+    <value name="IF0">
+      <block type="logic_compare">
+        <field name="OP">GT</field>
+        <value name="A">
+          <block type="ArduinoFiov2IN">
+            <field name="PROPERTY">ANALOGINONE</field>
+          </block>
+        </value>
+        <value name="B">
+          <block type="math_number">
+            <field name="NUM">300</field>
+          </block>
+        </value>
+      </block>
+    </value>
+    <statement name="DO0">
+      <block type="customized_set">
+        <!--<value name="SET">
+          <block type="RaspberryPiOUT">
+            <field name="PROPERTY">WEBDISPLAYONE</field>
+          </block>
+        </value>
+        <value name="TO">
+	   <block type="text">
+            <field name="TEXT">You are too close</field>
+          </block>
+        </value>-->
+      </block>
+    </statement>
+    <!--<statement name="ELSE">
+      <block type="customized_set">
+        <value name="SET">
+          <block type="RaspberryPiOUT">
+            <field name="PROPERTY">WEBDISPLAYONE</field>
+          </block>
+        </value>
+        <value name="TO">
+	   <block type="text">
+            <field name="TEXT">Come closer!</field>
+          </block>
+        </value>
+      </block>
+    </statement>-->
+  </block>
+</xml>

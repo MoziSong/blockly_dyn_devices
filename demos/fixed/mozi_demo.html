@@ -1,0 +1,110 @@
+<!--<!DOCTYPE html>-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Blockly Demo: Fixed Blockly</title>
+  <script type="text/javascript" src="blockly_compressed.js"></script>
+  <script type="text/javascript" src="blocks_compressed.js"></script>
+  <script type="text/javascript" src="msg/js/en.js"></script>
+  <script type="text/javascript" src="blocks/devices.js"></script>
+  <script type="text/javascript" src="generators/javascript/devices.js"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script type="text/javascript" src="app.js"></script>
+  <style>
+    body {
+      background-color: #fff;
+      font-family: sans-serif;
+    }
+    h1 {
+      font-weight: normal;
+      font-size: 140%;
+    }
+  </style>
+</head>
+<body>
+  <h1><a href="https://developers.google.com/blockly/">Blockly</a> &gt;
+    <a href="../index.html">Demos</a> &gt; Fixed Blockly</h1>
+
+  <p>This is a simple demo of injecting Blockly into a fixed-sized 'div' element.</p>
+
+  <p>&rarr; More info on <a href="https://developers.google.com/blockly/installation/injecting-fixed-size">injecting fixed-sized Blockly</a>...</p>
+
+  <div id="blocklyDiv" style="height: 480px; width: 600px;"></div>
+
+  <xml id="toolbox" style="display: none">
+    <category name="DeviceIN">
+      <block type="device1"></block>
+    </category>
+    <category name="Control">
+      <block type="controls_if"></block>
+      <block type="controls_whileUntil"></block>
+    </category>
+    <category name="Logic">
+      <block type="logic_compare"></block>
+      <block type="logic_operation"></block>
+      <block type="logic_boolean"></block>
+      <block type="controls_repeat_ext"></block>
+      <block type="math_number_property"></block>
+
+    </category>
+  </xml>
+<xml id="blocklyDefault" style="display: none">
+  <block type="controls_if" inline="false" x="62" y="69">
+    <value name="IF0">
+      <block type="logic_compare">
+        <field name="OP">GT</field>
+        <value name="A">
+          <block type="variables_get">
+            <field name="VAR">Count</field>
+          </block>
+        </value>
+        <value name="B">
+          <block type="math_number">
+            <field name="NUM">256</field>
+          </block>
+        </value>
+      </block>
+    </value>
+    <statement name="DO0">
+      <block type="variables_set">
+        <field name="VAR">Count</field>
+        <value name="VALUE">
+          <block type="math_number">
+            <field name="NUM">0</field>
+          </block>
+        </value>
+        <next>
+          <block type="text_print">
+            <value name="TEXT">
+              <block type="text">
+                <field name="TEXT">Game Over</field>
+              </block>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>
+  <script>
+	console.log("hi");
+      Blockly.inject(document.getElementById('blocklyDiv'),
+        {toolbox: document.getElementById('toolbox')});
+      
+  var defaultBlocks = document.getElementById('blocklyDefault');
+  Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, defaultBlocks);
+console.log("getting default");
+      $().ready(function(){
+	console.log("in ready");
+	getDevices(function(devices){
+                    for (var i=0; i < devices.length; i++) {
+                        handleDevice(devices[i]);
+			console.log("i'm here");
+			writeDeviceBlock();
+                    }
+        });
+    });
+  </script>
+
+</body>
+</html>

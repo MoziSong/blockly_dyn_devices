@@ -1,0 +1,3 @@
+[submodule "meschup-demo"]
+	path = meschup-demo
+	url = https://github.com/MoziSong/meschup-demo

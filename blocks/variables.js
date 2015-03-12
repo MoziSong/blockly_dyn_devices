@@ -130,3 +130,17 @@ Blockly.Blocks['variables_set'] = {
   },
   customContextMenu: Blockly.Blocks['variables_get'].customContextMenu
 };
+
+Blockly.Blocks['customized_set'] = {
+  init: function() {
+    this.setColour(120);
+    this.appendDummyInput()
+        .appendField("set");
+    this.appendValueInput("SET");
+    this.appendValueInput("TO")
+        .appendField("to");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setTooltip('');
+  }
+};
